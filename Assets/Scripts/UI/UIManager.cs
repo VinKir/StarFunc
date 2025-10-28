@@ -7,53 +7,81 @@ public class UIManager : MonoBehaviour
     public GameObject canvasMainMenuPanel;
     public GameObject canvasSettingsPanel;
     public GameObject canvasGuidePanel;
+    public GameObject canvasAboutPlayPanel;
+    public GameObject canvasGameLevelsPanel;
+    public GameObject canvasShopPanel;
 
     [Header("Music Control")]
     public GameObject buttonMusicOn;
     public GameObject buttonMusicOff;
     public AudioSource musicPlayer;
 
-    [Header("Buttons")]
+    [Header("Buttons (Main Menu)")]
+    public Button playButton;
     public Button settingsButton;
     public Button guideButton;
+    public Button shopButton;
+
+    [Header("Buttons (Settings Panel)")]
+    public Button aboutButtonButton; // переход в CanvasAboutPlayPanel
 
     void Start()
     {
-        // Кнопки перехода между панелями
+        // --- Кнопки главного меню ---
+        playButton.onClick.AddListener(OpenGameLevels);
         settingsButton.onClick.AddListener(OpenSettings);
         guideButton.onClick.AddListener(OpenGuide);
+        shopButton.onClick.AddListener(OpenShop);
 
-        // Кнопки управления музыкой
+        // --- Кнопка из настроек ---
+        aboutButtonButton.onClick.AddListener(OpenAboutPlay);
+
+        // --- Музыка ---
         buttonMusicOn.GetComponent<Button>().onClick.AddListener(TurnMusicOff);
         buttonMusicOff.GetComponent<Button>().onClick.AddListener(TurnMusicOn);
 
-        // Запуск с главного меню
+        // --- Стартовая панель ---
         OpenMainMenu();
     }
 
-    // --- Методы перехода ---
+    // --- Методы переходов ---
     public void OpenSettings()
     {
-        canvasMainMenuPanel.SetActive(false);
+        HideAllPanels();
         canvasSettingsPanel.SetActive(true);
-        canvasGuidePanel.SetActive(false);
     }
 
     public void OpenGuide()
     {
-        canvasMainMenuPanel.SetActive(false);
-        canvasSettingsPanel.SetActive(false);
+        HideAllPanels();
         canvasGuidePanel.SetActive(true);
+    }
+
+    public void OpenGameLevels()
+    {
+        HideAllPanels();
+        canvasGameLevelsPanel.SetActive(true);
+    }
+
+    public void OpenAboutPlay()
+    {
+        HideAllPanels();
+        canvasAboutPlayPanel.SetActive(true);
+    }
+
+    public void OpenShop()
+    {
+        HideAllPanels();
+        canvasShopPanel.SetActive(true);
     }
 
     public void OpenMainMenu()
     {
+        HideAllPanels();
         canvasMainMenuPanel.SetActive(true);
-        canvasSettingsPanel.SetActive(false);
-        canvasGuidePanel.SetActive(false);
     }
 
-    // --- Универсальный метод для всех кнопок "Назад" ---
+    // --- Универсальный возврат ---
     public void BackToMainMenu()
     {
         OpenMainMenu();
@@ -76,5 +104,16 @@ public class UIManager : MonoBehaviour
 
         buttonMusicOn.SetActive(true);
         buttonMusicOff.SetActive(false);
+    }
+
+    // --- Скрывает все панели ---
+    void HideAllPanels()
+    {
+        canvasMainMenuPanel.SetActive(false);
+        canvasSettingsPanel.SetActive(false);
+        canvasGuidePanel.SetActive(false);
+        canvasAboutPlayPanel.SetActive(false);
+        canvasGameLevelsPanel.SetActive(false);
+        canvasShopPanel.SetActive(false);
     }
 }
