@@ -3,11 +3,11 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class CircleController : MonoBehaviour
 {
-    Rigidbody2D rigidbody;
+    Rigidbody2D circleRigidbody;
 
     void Start()
     {
-        rigidbody = GetComponent<Rigidbody2D>();
+        circleRigidbody = GetComponent<Rigidbody2D>();
     }
 
     // Update is called once per frame
@@ -18,6 +18,6 @@ public class CircleController : MonoBehaviour
 
     public void Fall()
     {
-        rigidbody.simulated = true;
+        circleRigidbody.simulated = true;
     }
 }

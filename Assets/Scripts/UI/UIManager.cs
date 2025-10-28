@@ -1,119 +1,123 @@
+#nullable enable
+
 using UnityEngine;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
+    #region Public Fields
+
     [Header("Panels")]
-    public GameObject canvasMainMenuPanel;
-    public GameObject canvasSettingsPanel;
-    public GameObject canvasGuidePanel;
-    public GameObject canvasAboutPlayPanel;
-    public GameObject canvasGameLevelsPanel;
-    public GameObject canvasShopPanel;
+    public GameObject? mainMenuPanel;
 
     [Header("Music Control")]
-    public GameObject buttonMusicOn;
-    public GameObject buttonMusicOff;
-    public AudioSource musicPlayer;
+    public GameObject? buttonMusic;
+    public Sprite? musicOnIcon;
+    public Sprite? musicOffIcon;
+    public AudioSource? musicPlayer;
 
     [Header("Buttons (Main Menu)")]
-    public Button playButton;
-    public Button settingsButton;
-    public Button guideButton;
-    public Button shopButton;
+    public Button? playButton;
+    public Button? settingsButton;
+    public Button? guideButton;
+    public Button? shopButton;
 
     [Header("Buttons (Settings Panel)")]
-    public Button aboutButtonButton; // переход в CanvasAboutPlayPanel
+    public Button? aboutButtonButton;
 
-    void Start()
+    #endregion
+
+    #region Private Fields
+
+    private GameObject? currentPanel = null;
+
+    #endregion
+
+    #region Public Methods
+
+    public void ToggleMusic()
     {
-        // --- Кнопки главного меню ---
-        playButton.onClick.AddListener(OpenGameLevels);
-        settingsButton.onClick.AddListener(OpenSettings);
-        guideButton.onClick.AddListener(OpenGuide);
-        shopButton.onClick.AddListener(OpenShop);
-
-        // --- Кнопка из настроек ---
-        aboutButtonButton.onClick.AddListener(OpenAboutPlay);
-
-        // --- Музыка ---
-        buttonMusicOn.GetComponent<Button>().onClick.AddListener(TurnMusicOff);
-        buttonMusicOff.GetComponent<Button>().onClick.AddListener(TurnMusicOn);
-
-        // --- Стартовая панель ---
-        OpenMainMenu();
+        if (SettingsManager.Instance.CurrentSettings.isMusicOn)
+        {
+            TurnMusicOff();
+        }
+        else
+        {
+            TurnMusicOn();
+        }
     }
 
-    // --- Методы переходов ---
-    public void OpenSettings()
+    public void TurnMusicOn()
     {
-        HideAllPanels();
-        canvasSettingsPanel.SetActive(true);
+        if (musicPlayer == null || buttonMusic == null || musicOnIcon == null)
+        {
+            return;
+        }
+
+        musicPlayer.volume = 1f;
+        buttonMusic.GetComponent<Button>().image.sprite = musicOnIcon;
+        SettingsManager.Instance.SetMusicEnabled(true);
     }
 
-    public void OpenGuide()
+    public void TurnMusicOff()
     {
-        HideAllPanels();
-        canvasGuidePanel.SetActive(true);
+        if (musicPlayer == null || buttonMusic == null || musicOffIcon == null)
+        {
+            return;
+        }
+
+        musicPlayer.volume = 0f;
+        buttonMusic.GetComponent<Button>().image.sprite = musicOffIcon;
+        SettingsManager.Instance.SetMusicEnabled(false);
     }
 
-    public void OpenGameLevels()
+    public void ShowPanel(GameObject panel)
     {
-        HideAllPanels();
-        canvasGameLevelsPanel.SetActive(true);
+        if (currentPanel == null || currentPanel == panel)
+        {
+            return;
+        }
+
+        currentPanel.SetActive(false);
+        currentPanel = panel;
+        currentPanel.SetActive(true);
     }
 
-    public void OpenAboutPlay()
+    #endregion
+
+    #region Private Methods
+
+    private void Awake()
     {
-        HideAllPanels();
-        canvasAboutPlayPanel.SetActive(true);
+        if (SettingsManager.Instance.CurrentSettings.isMusicOn)
+        {
+            TurnMusicOn();
+        }
+        else
+        {
+            TurnMusicOff();
+        }
     }
 
-    public void OpenShop()
+    private void Start()
     {
-        HideAllPanels();
-        canvasShopPanel.SetActive(true);
+        currentPanel = mainMenuPanel;
+
+        if (currentPanel == null)
+        {
+            Debug.LogError("UIManager: Main Menu Panel is not assigned.");
+            return;
+        }
+
+        // --- пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ ---
+        // playButton.onClick.AddListener(ShowPanel(gameLevelsPanel));
+        // settingsButton.onClick.AddListener(ShowPanel(settingsPanel));
+        // guideButton.onClick.AddListener(ShowPanel(guidePanel));
+        // shopButton.onClick.AddListener(ShowPanel(shopPanel));
+
+        // --- пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ---
+        // aboutButtonButton.onClick.AddListener(OpenAboutPlay);
     }
 
-    public void OpenMainMenu()
-    {
-        HideAllPanels();
-        canvasMainMenuPanel.SetActive(true);
-    }
-
-    // --- Универсальный возврат ---
-    public void BackToMainMenu()
-    {
-        OpenMainMenu();
-    }
-
-    // --- Музыка ---
-    void TurnMusicOff()
-    {
-        if (musicPlayer != null)
-            musicPlayer.Pause();
-
-        buttonMusicOn.SetActive(false);
-        buttonMusicOff.SetActive(true);
-    }
-
-    void TurnMusicOn()
-    {
-        if (musicPlayer != null)
-            musicPlayer.Play();
-
-        buttonMusicOn.SetActive(true);
-        buttonMusicOff.SetActive(false);
-    }
-
-    // --- Скрывает все панели ---
-    void HideAllPanels()
-    {
-        canvasMainMenuPanel.SetActive(false);
-        canvasSettingsPanel.SetActive(false);
-        canvasGuidePanel.SetActive(false);
-        canvasAboutPlayPanel.SetActive(false);
-        canvasGameLevelsPanel.SetActive(false);
-        canvasShopPanel.SetActive(false);
-    }
+    #endregion
 }
