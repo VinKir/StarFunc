@@ -1,0 +1,156 @@
+#pragma kernel FunctionCalculator
+
+StructuredBuffer<float2> EncodedFunction;
+
+float BottomY;
+
+float2 Scale; // x: scaleX, y: scaleY
+float2 Offset; // x: offsetX, y: offsetY
+float Resolution;
+
+RWStructuredBuffer<float3> SurfaceMeshVertices;
+RWStructuredBuffer<uint> SurfaceMeshIndices;
+RWStructuredBuffer<float2> CollisionEdgeVertices;
+
+#define MAX_STACK_SIZE 64
+
+[numthreads(64, 1, 1)]
+void FunctionCalculator (uint3 id : SV_DispatchThreadID)
+{
+    uint index = id.x;
+    
+    // Safety check: skip threads beyond resolution
+    if (index >= uint(Resolution))
+    {
+        return;
+    }
+
+    float Stack[MAX_STACK_SIZE];
+    uint stackPointer = 0;
+
+    uint functionSize = uint(ceil(EncodedFunction[0].y));
+    
+    // Safety check: prevent infinite loops and buffer overruns
+    if (functionSize == 0 || functionSize > 1000)
+    {
+        return;
+    }
+
+    // Map index to [0, 1] range
+    float t = float(index) / (Resolution - 1.0);
+
+    // Convert back to [-0.5, 0.5] range and apply scale/offset
+    float x = (t - 0.5) * Scale.x + Offset.x;
+
+    for (uint i = 1; i <= functionSize; i++)
+    {
+        float2 token = EncodedFunction[i];
+
+        if (token.x == 1) // Число
+        {
+            if (stackPointer < MAX_STACK_SIZE)
+            {
+                Stack[stackPointer++] = token.y;
+            }
+        }
+        else if (token.x == 2) // Оператор
+        {
+            // Safety check: ensure we have enough values on stack
+            if (stackPointer == 0)
+            {
+                return; // Stack underflow
+            }
+            
+            float b = Stack[--stackPointer];
+            float a = 0.0;
+            float result = 0.0;
+
+            uint opCode = uint(ceil(token.y));
+            
+            // Binary operators need 2 operands
+            if (opCode == 0 || opCode == 1 || opCode == 2 || opCode == 3 || opCode == 4)
+            {
+                if (stackPointer == 0)
+                {
+                    return; // Stack underflow
+                }
+                a = Stack[--stackPointer];
+            }
+
+            switch (opCode)
+            {
+                case 0: result = a + b; break; // +
+                case 1: result = a - b; break; // -
+                case 2: result = a * b; break; // *
+                case 3: result = (b != 0.0) ? a / b : 0.0; break; // / (with division by zero check)
+                case 4: 
+                    // Handle negative base: sign(a) * pow(abs(a), b)
+                    result = sign(a) * pow(abs(a), b); 
+                    break; // ^
+                case 5: result = sin(b); break; // sin
+                case 6: result = cos(b); break; // cos
+                case 7: result = tan(b); break; // tan
+                case 8: result = (b > 0.0) ? log(b) : 0.0; break; // log (with safety check)
+                case 9: result = exp(b); break; // exp
+                default: result = 0.0; break;
+            }
+
+            if (stackPointer < MAX_STACK_SIZE)
+            {
+                Stack[stackPointer++] = result;
+            }
+        }
+        else if (token.x == 3) // Переменная
+        {
+            if (stackPointer < MAX_STACK_SIZE)
+            {
+                Stack[stackPointer++] = x;
+            }
+        }
+    }
+
+    // Safety check: ensure stack has a result
+    if (stackPointer == 0)
+    {
+        return;
+    }
+    
+    float y = Stack[--stackPointer];
+
+    // Запись вершины в буфер
+    // Делаем две вершины на каждый x: одна для функции, другая для нижней границы
+    uint vertexIndex = index * 2;
+    SurfaceMeshVertices[vertexIndex] = float3(x, y, 0);
+    SurfaceMeshVertices[vertexIndex + 1] = float3(x, BottomY + y, 0);
+
+    CollisionEdgeVertices[index] = float2((x - Offset.x) / Scale.x, y);
+
+    // Запись индексов в буфер
+    // Создаём quad между текущей и следующей позицией x
+    // Пропускаем последнюю точку, так как для неё нет следующей
+    if (float(index) < Resolution - 1)
+    {
+        uint baseIndex = index * 6;
+        
+        // Вершины текущего сегмента:
+        // v0 = index * 2      (top current)
+        // v1 = index * 2 + 1  (bottom current)
+        // v2 = (index + 1) * 2      (top next)
+        // v3 = (index + 1) * 2 + 1  (bottom next)
+        
+        uint v0 = index * 2;
+        uint v1 = index * 2 + 1;
+        uint v2 = (index + 1) * 2;
+        uint v3 = (index + 1) * 2 + 1;
+        
+        // Первый треугольник (v0, v2, v1)
+        SurfaceMeshIndices[baseIndex + 0] = v0;
+        SurfaceMeshIndices[baseIndex + 1] = v2;
+        SurfaceMeshIndices[baseIndex + 2] = v1;
+        
+        // Второй треугольник (v1, v2, v3)
+        SurfaceMeshIndices[baseIndex + 3] = v1;
+        SurfaceMeshIndices[baseIndex + 4] = v2;
+        SurfaceMeshIndices[baseIndex + 5] = v3;
+    }
+}

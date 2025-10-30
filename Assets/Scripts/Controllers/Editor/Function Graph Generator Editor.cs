@@ -15,7 +15,7 @@ class FunctionGraphGeneratorEditor : Editor
 
         if (GUILayout.Button("Compute Function Graph"))
         {
-            generator.ComputeFunctionGraph();
+            generator.ComputeFunctionGraph(() => { });
         }
     }
 }

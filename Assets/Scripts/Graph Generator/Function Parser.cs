@@ -55,10 +55,10 @@ public class FunctionParser
             return Type switch
             {
                 // Для чисел: тип=0, значение=само число
-                TokenType.Number => new Vector2(0, float.Parse(Value)),
+                TokenType.Number => new Vector2(1, float.Parse(Value)),
 
                 // Для операторов: тип=1, значение=код операции
-                TokenType.Operator => new Vector2(1, Value switch
+                TokenType.Operator => new Vector2(2, Value switch
                 {
                     "+" => 0,    // Сложение
                     "-" => 1,    // Вычитание
@@ -74,7 +74,7 @@ public class FunctionParser
                 }),
 
                 // Для переменных: тип=2, значение=0
-                TokenType.Variable => new Vector2(2, 0),
+                TokenType.Variable => new Vector2(3, 0),
 
                 _ => throw new Exception("Unknown token type")
             };
