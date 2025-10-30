@@ -1,119 +1,155 @@
+#nullable enable
+
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Менеджер пользовательского интерфейса.
+/// Управляет панелями, кнопками и музыкой в игре.
+/// </summary>
 public class UIManager : MonoBehaviour
 {
+    #region Public Fields
+
     [Header("Panels")]
-    public GameObject canvasMainMenuPanel;
-    public GameObject canvasSettingsPanel;
-    public GameObject canvasGuidePanel;
-    public GameObject canvasAboutPlayPanel;
-    public GameObject canvasGameLevelsPanel;
-    public GameObject canvasShopPanel;
+    public GameObject? mainMenuPanel; // Панель главного меню
 
     [Header("Music Control")]
-    public GameObject buttonMusicOn;
-    public GameObject buttonMusicOff;
-    public AudioSource musicPlayer;
+    public GameObject? buttonMusic; // Кнопка управления музыкой
+    public Sprite? musicOnIcon; // Иконка включённой музыки
+    public Sprite? musicOffIcon; // Иконка выключенной музыки
+    public AudioSource? musicPlayer; // Аудио источник для воспроизведения музыки
 
     [Header("Buttons (Main Menu)")]
-    public Button playButton;
-    public Button settingsButton;
-    public Button guideButton;
-    public Button shopButton;
+    public Button? playButton; // Кнопка "Играть"
+    public Button? settingsButton; // Кнопка настроек
+    public Button? guideButton; // Кнопка руководства/гайда
+    public Button? shopButton; // Кнопка магазина
 
     [Header("Buttons (Settings Panel)")]
-    public Button aboutButtonButton; // ������� � CanvasAboutPlayPanel
+    public Button? aboutButtonButton; // Кнопка "О приложении"
 
-    void Start()
+    #endregion
+
+    #region Private Fields
+
+    private GameObject? currentPanel = null; // Текущая активная панель
+
+    #endregion
+
+    #region Public Methods
+
+    /// <summary>
+    /// Переключает состояние музыки (вкл/выкл).
+    /// </summary>
+    public void ToggleMusic()
     {
-        // --- ������ �������� ���� ---
-        playButton.onClick.AddListener(OpenGameLevels);
-        settingsButton.onClick.AddListener(OpenSettings);
-        guideButton.onClick.AddListener(OpenGuide);
-        shopButton.onClick.AddListener(OpenShop);
-
-        // --- ������ �� �������� ---
-        aboutButtonButton.onClick.AddListener(OpenAboutPlay);
-
-        // --- ������ ---
-        buttonMusicOn.GetComponent<Button>().onClick.AddListener(TurnMusicOff);
-        buttonMusicOff.GetComponent<Button>().onClick.AddListener(TurnMusicOn);
-
-        // --- ��������� ������ ---
-        OpenMainMenu();
+        // Проверяем текущее состояние музыки и переключаем её
+        if (SettingsManager.Instance.CurrentSettings.isMusicOn)
+        {
+            TurnMusicOff();
+        }
+        else
+        {
+            TurnMusicOn();
+        }
     }
 
-    // --- ������ ��������� ---
-    public void OpenSettings()
+    /// <summary>
+    /// Включает музыку и обновляет иконку кнопки.
+    /// </summary>
+    public void TurnMusicOn()
     {
-        HideAllPanels();
-        canvasSettingsPanel.SetActive(true);
+        // Проверяем, что все необходимые компоненты назначены
+        if (musicPlayer == null || buttonMusic == null || musicOnIcon == null)
+        {
+            return;
+        }
+
+        // Устанавливаем громкость на максимум
+        musicPlayer.volume = 1f;
+        // Меняем иконку на "музыка включена"
+        buttonMusic.GetComponent<Button>().image.sprite = musicOnIcon;
+        // Сохраняем состояние в настройках
+        SettingsManager.Instance.SetMusicEnabled(true);
     }
 
-    public void OpenGuide()
+    /// <summary>
+    /// Выключает музыку и обновляет иконку кнопки.
+    /// </summary>
+    public void TurnMusicOff()
     {
-        HideAllPanels();
-        canvasGuidePanel.SetActive(true);
+        // Проверяем, что все необходимые компоненты назначены
+        if (musicPlayer == null || buttonMusic == null || musicOffIcon == null)
+        {
+            return;
+        }
+
+        // Устанавливаем громкость на ноль
+        musicPlayer.volume = 0f;
+        // Меняем иконку на "музыка выключена"
+        buttonMusic.GetComponent<Button>().image.sprite = musicOffIcon;
+        // Сохраняем состояние в настройках
+        SettingsManager.Instance.SetMusicEnabled(false);
     }
 
-    public void OpenGameLevels()
+    /// <summary>
+    /// Показывает указанную панель, скрывая текущую активную.
+    /// </summary>
+    /// <param name="panel">Панель для отображения</param>
+    public void ShowPanel(GameObject panel)
     {
-        HideAllPanels();
-        canvasGameLevelsPanel.SetActive(true);
+        // Если текущая панель не назначена или это та же панель, ничего не делаем
+        if (currentPanel == null || currentPanel == panel)
+        {
+            return;
+        }
+
+        // Скрываем текущую панель
+        currentPanel.SetActive(false);
+        // Устанавливаем новую панель как текущую
+        currentPanel = panel;
+        // Показываем новую панель
+        currentPanel.SetActive(true);
     }
 
-    public void OpenAboutPlay()
+    #endregion
+
+    #region Private Methods
+
+    /// <summary>
+    /// Инициализация при пробуждении объекта.
+    /// Устанавливает состояние музыки согласно сохранённым настройкам.
+    /// </summary>
+    private void Awake()
     {
-        HideAllPanels();
-        canvasAboutPlayPanel.SetActive(true);
+        // Загружаем состояние музыки из настроек и применяем его
+        if (SettingsManager.Instance.CurrentSettings.isMusicOn)
+        {
+            TurnMusicOn();
+        }
+        else
+        {
+            TurnMusicOff();
+        }
     }
 
-    public void OpenShop()
+    /// <summary>
+    /// Инициализация при старте.
+    /// Устанавливает главное меню как активную панель и подготавливает обработчики событий.
+    /// </summary>
+    private void Start()
     {
-        HideAllPanels();
-        canvasShopPanel.SetActive(true);
+        // Устанавливаем главное меню как текущую панель
+        currentPanel = mainMenuPanel;
+
+        // Проверяем, что панель главного меню назначена
+        if (currentPanel == null)
+        {
+            Debug.LogError("UIManager: Main Menu Panel is not assigned.");
+            return;
+        }
     }
 
-    public void OpenMainMenu()
-    {
-        HideAllPanels();
-        canvasMainMenuPanel.SetActive(true);
-    }
-
-    // --- ������������� ������� ---
-    public void BackToMainMenu()
-    {
-        OpenMainMenu();
-    }
-
-    // --- ������ ---
-    void TurnMusicOff()
-    {
-        if (musicPlayer != null)
-            musicPlayer.Pause();
-
-        buttonMusicOn.SetActive(false);
-        buttonMusicOff.SetActive(true);
-    }
-
-    void TurnMusicOn()
-    {
-        if (musicPlayer != null)
-            musicPlayer.Play();
-
-        buttonMusicOn.SetActive(true);
-        buttonMusicOff.SetActive(false);
-    }
-
-    // --- �������� ��� ������ ---
-    void HideAllPanels()
-    {
-        canvasMainMenuPanel.SetActive(false);
-        canvasSettingsPanel.SetActive(false);
-        canvasGuidePanel.SetActive(false);
-        canvasAboutPlayPanel.SetActive(false);
-        canvasGameLevelsPanel.SetActive(false);
-        canvasShopPanel.SetActive(false);
-    }
+    #endregion
 }
