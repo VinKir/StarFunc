@@ -20,6 +20,11 @@ public struct GameSettings
     public bool isSoundEffectsOn;
 
     /// <summary>
+    /// Сид для генерации уровней.
+    /// </summary>
+    public int seed;
+
+    /// <summary>
     /// Возвращает настройки по умолчанию.
     /// </summary>
     /// <returns>Структура GameSettings с включёнными музыкой и звуковыми эффектами.</returns>
@@ -28,7 +33,8 @@ public struct GameSettings
         return new GameSettings
         {
             isMusicOn = true, // По умолчанию музыка включена
-            isSoundEffectsOn = true // По умолчанию звуковые эффекты включены
+            isSoundEffectsOn = true, // По умолчанию звуковые эффекты включены
+            seed = new Random().Next()
         };
     }
 }

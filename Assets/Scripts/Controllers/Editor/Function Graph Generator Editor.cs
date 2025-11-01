@@ -15,7 +15,27 @@ class FunctionGraphGeneratorEditor : Editor
 
         if (GUILayout.Button("Compute Function Graph"))
         {
-            generator.ComputeFunctionGraph(() => { });
+            generator.ComputeFunctionGraph(true);
+        }
+
+        if (GUILayout.Button("Clear Collision Data"))
+        {
+            if (generator.TryGetComponent<EdgeCollider2D>(out var edgeCollider))
+            {
+                Undo.RecordObject(edgeCollider, "Clear Collision Data");
+
+                edgeCollider.Reset();
+                edgeCollider.points = new Vector2[] { Vector2.zero, Vector2.right * 0.01f }; // Minimum 2 points
+
+                EditorUtility.SetDirty(edgeCollider);
+                EditorUtility.SetDirty(generator);
+
+                // Force scene to save changes
+                if (!Application.isPlaying)
+                {
+                    UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(generator.gameObject.scene);
+                }
+            }
         }
     }
 }

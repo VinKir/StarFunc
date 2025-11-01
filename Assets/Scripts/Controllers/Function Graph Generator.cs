@@ -2,11 +2,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 [RequireComponent(typeof(EdgeCollider2D))]
-public class FunctionGraphGenerator : MonoBehaviour
+public class FunctionGraphGenerator : MonoBehaviour, IDisposable
 {
     [Header("Compute Shader Settings")]
     public ComputeShader? functionCalculatorComputeShader = null;
@@ -31,9 +33,10 @@ public class FunctionGraphGenerator : MonoBehaviour
         set
         {
             functionExpression = value;
-            ComputeFunctionGraph(() => { });
+            ComputeFunctionGraph(ForceCollisionUpdate);
         }
     }
+    public bool ForceCollisionUpdate { get; set; } = true;
 
     private int kernelHandle = -1;
     private ComputeBuffer? encodedFunctionBuffer = null;
@@ -41,7 +44,16 @@ public class FunctionGraphGenerator : MonoBehaviour
 
     public Matrix4x4 GetRenderTransform() => Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one);
 
-    public void ComputeFunctionGraph(Action onCollisionDataReady)
+    public void Dispose()
+    {
+        ReleaseBuffers();
+        VerticesBuffer?.Dispose();
+        IndicesBuffer?.Dispose();
+        CollisionEdgeBuffer?.Dispose();
+        encodedFunctionBuffer?.Dispose();
+    }
+
+    public void ComputeFunctionGraph(bool retrieveCollision, Action? onCollisionDataReady = null)
     {
         if (functionCalculatorComputeShader == null)
         {
@@ -54,7 +66,7 @@ public class FunctionGraphGenerator : MonoBehaviour
             kernelHandle = functionCalculatorComputeShader.FindKernel("FunctionCalculator");
         }
 
-        Vector2[] encodedFunction = ParseFunction();
+        Vector2[] encodedFunction = FunctionParser.ParseFunctionToGPUTokens(functionExpression);
 
         if (encodedFunctionBuffer == null || encodedFunctionBuffer.count != encodedFunction.Length)
         {
@@ -63,12 +75,6 @@ public class FunctionGraphGenerator : MonoBehaviour
         }
 
         encodedFunctionBuffer.SetData(encodedFunction);
-
-        functionCalculatorComputeShader.SetBuffer(kernelHandle, "EncodedFunction", encodedFunctionBuffer);
-        functionCalculatorComputeShader.SetFloat("BottomY", bottomY);
-        functionCalculatorComputeShader.SetFloat("Resolution", resolution);
-        functionCalculatorComputeShader.SetVector("Scale", new Vector2(transform.localScale.x, transform.localScale.y));
-        functionCalculatorComputeShader.SetVector("Offset", new Vector2(transform.position.x, transform.position.z));
 
         int numVertices = resolution * 2;
         int numIndices = (resolution - 1) * 6; // (resolution - 1) quads, each quad = 6 indices
@@ -92,30 +98,31 @@ public class FunctionGraphGenerator : MonoBehaviour
             CollisionEdgeBuffer = new ComputeBuffer(numCollisionVertices, sizeof(float) * 2);
         }
 
-        functionCalculatorComputeShader.SetBuffer(kernelHandle, "SurfaceMeshVertices", VerticesBuffer);
-        functionCalculatorComputeShader.SetBuffer(kernelHandle, "SurfaceMeshIndices", IndicesBuffer);
-        functionCalculatorComputeShader.SetBuffer(kernelHandle, "CollisionEdgeVertices", CollisionEdgeBuffer);
-
-        int threadGroups = Mathf.CeilToInt((float)resolution / 64);
-        functionCalculatorComputeShader.Dispatch(kernelHandle, threadGroups, 1, 1);
-
-        AsyncGPUReadback.Request(CollisionEdgeBuffer, (request) =>
-        {
-            if (request.hasError)
+        FunctionCalculatorHandler.CalculateFunction(
+            functionCalculatorComputeShader,
+            kernelHandle,
+            encodedFunctionBuffer,
+            CollisionEdgeBuffer,
+            resolution,
+            bottomY,
+            new Vector2(transform.localScale.x, transform.localScale.y),
+            new Vector2(transform.position.x, transform.position.z),
+            VerticesBuffer,
+            IndicesBuffer,
+            false,
+            graphMaterial != null,
+            retrieveCollision ? collisionData =>
             {
-                Debug.LogError("Error reading back CollisionEdgeBuffer data from GPU.");
-                return;
-            }
-
-            Vector2[] collisionData = request.GetData<Vector2>().ToArray();
-
-            if (edgeCollider != null)
-            {
+                if (edgeCollider == null)
+                {
+                    edgeCollider = GetComponent<EdgeCollider2D>();
+                }
                 edgeCollider.SetPoints(new List<Vector2>(collisionData));
-            }
 
-            onCollisionDataReady();
-        });
+                onCollisionDataReady?.Invoke();
+            }
+        : null
+        );
     }
 
     private void OnValidate()
@@ -139,26 +146,6 @@ public class FunctionGraphGenerator : MonoBehaviour
         edgeCollider = GetComponent<EdgeCollider2D>();
     }
 
-    private float b = 0;
-
-    private void Start()
-    {
-        // TODO: Убрать вызов из Start после отладки
-        ComputeFunctionGraph(() =>
-        {
-            // Здесь можно использовать collisionData для дальнейших целей, например, для настройки коллайдеров
-        });
-    }
-
-    private void Update()
-    {
-        if (UnityEngine.Random.Range(0f, 1f) < 0.5f)
-        {
-            FunctionExpression = $"x*{b}";
-            b += 0.001f;
-        }
-    }
-
     private void OnDestroy()
     {
         ReleaseBuffers();
@@ -178,15 +165,5 @@ public class FunctionGraphGenerator : MonoBehaviour
         encodedFunctionBuffer = null;
         VerticesBuffer = null;
         IndicesBuffer = null;
-    }
-
-    private Vector2[] ParseFunction()
-    {
-        string infix = FunctionParser.RawStringToInfix(functionExpression);
-        string rpn = FunctionParser.InfixToReversePolishNotation(infix);
-        List<FunctionParser.Token> tokens = FunctionParser.TokenizeReversePolishNotation(rpn);
-        List<Vector2> gpuTokens = FunctionParser.ConvertTokensToGPUTokens(tokens);
-        gpuTokens.Insert(0, new Vector2(0, tokens.Count)); // Вставляем размер массива в начало
-        return gpuTokens.ToArray();
     }
 }
