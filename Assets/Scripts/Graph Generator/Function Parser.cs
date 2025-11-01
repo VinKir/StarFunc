@@ -81,6 +81,16 @@ public class FunctionParser
         }
     }
 
+    public static Vector2[] ParseFunctionToGPUTokens(string functionExpression)
+    {
+        string infix = RawStringToInfix(functionExpression);
+        string rpn = InfixToReversePolishNotation(infix);
+        List<Token> tokens = TokenizeReversePolishNotation(rpn);
+        List<Vector2> gpuTokens = ConvertTokensToGPUTokens(tokens);
+        gpuTokens.Insert(0, new Vector2(0, tokens.Count)); // Вставляем размер массива в начало
+        return gpuTokens.ToArray();
+    }
+
     /// <summary>
     /// Преобразует список токенов в список векторов для GPU.
     /// </summary>

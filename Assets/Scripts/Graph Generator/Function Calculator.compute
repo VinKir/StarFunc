@@ -7,6 +7,8 @@ float BottomY;
 float2 Scale; // x: scaleX, y: scaleY
 float2 Offset; // x: offsetX, y: offsetY
 float Resolution;
+bool ComputeVertices;
+bool ScaleCollision;
 
 RWStructuredBuffer<float3> SurfaceMeshVertices;
 RWStructuredBuffer<uint> SurfaceMeshIndices;
@@ -17,6 +19,9 @@ RWStructuredBuffer<float2> CollisionEdgeVertices;
 [numthreads(64, 1, 1)]
 void FunctionCalculator (uint3 id : SV_DispatchThreadID)
 {
+    uint nanBits = 0x7fc00000u;
+    float NaN = asfloat(nanBits);
+
     uint index = id.x;
     
     // Safety check: skip threads beyond resolution
@@ -84,13 +89,12 @@ void FunctionCalculator (uint3 id : SV_DispatchThreadID)
                 case 2: result = a * b; break; // *
                 case 3: result = (b != 0.0) ? a / b : 0.0; break; // / (with division by zero check)
                 case 4: 
-                    // Handle negative base: sign(a) * pow(abs(a), b)
-                    result = sign(a) * pow(abs(a), b); 
+                    result = a < 0.0 && frac(b) != 0.0 ? NaN : pow(abs(a), b); 
                     break; // ^
                 case 5: result = sin(b); break; // sin
                 case 6: result = cos(b); break; // cos
                 case 7: result = tan(b); break; // tan
-                case 8: result = (b > 0.0) ? log(b) : 0.0; break; // log (with safety check)
+                case 8: result = (b > 0.0) ? log(b) : NaN; break; // log (with safety check)
                 case 9: result = exp(b); break; // exp
                 default: result = 0.0; break;
             }
@@ -117,13 +121,20 @@ void FunctionCalculator (uint3 id : SV_DispatchThreadID)
     
     float y = Stack[--stackPointer];
 
+    float collisionX = ScaleCollision ? x: (x - Offset.x) / Scale.x;
+
+    CollisionEdgeVertices[index] = float2(collisionX, y);
+
+    if (!ComputeVertices)
+    {
+        return;
+    }
+
     // Запись вершины в буфер
     // Делаем две вершины на каждый x: одна для функции, другая для нижней границы
     uint vertexIndex = index * 2;
     SurfaceMeshVertices[vertexIndex] = float3(x, y, 0);
     SurfaceMeshVertices[vertexIndex + 1] = float3(x, BottomY + y, 0);
-
-    CollisionEdgeVertices[index] = float2((x - Offset.x) / Scale.x, y);
 
     // Запись индексов в буфер
     // Создаём quad между текущей и следующей позицией x

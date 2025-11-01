@@ -18,6 +18,15 @@ class CameraMovementController : MonoBehaviour
     [Tooltip("Максимальный размер ортографической камеры")]
     public float maxZoom = 20f;
 
+    [Header("Movement Settings")]
+    public bool lockOnCircle = false;
+    public float lockedOnCircleReactiveDistanceFromView = 0.1f;
+    [Tooltip("Скорость следования камеры за объектом (выше = быстрее)")]
+    public float followSmoothSpeed = 5f;
+
+    [Header("References")]
+    public Transform? circleObject = null;
+
     private Camera? cam = null;
     private InputSystemDefaultActions? inputActions = null;
     private Vector2 moveInput = Vector2.zero;
@@ -69,7 +78,66 @@ class CameraMovementController : MonoBehaviour
     /// </summary>
     private void Update()
     {
-        HandleMovement();
+        if (!lockOnCircle)
+        {
+            HandleMovement();
+        }
+    }
+
+    /// <summary>
+    /// Фиксированное обновление. Обрабатывает следование за кругом.
+    /// Используется FixedUpdate, так как круг двигается в FixedUpdate.
+    /// </summary>
+    private void FixedUpdate()
+    {
+        if (lockOnCircle)
+        {
+            HandleCircleMovement();
+        }
+    }
+
+    private void HandleCircleMovement()
+    {
+        if (circleObject == null || cam == null)
+        {
+            return;
+        }
+
+        var camHalfWidth = cam.orthographicSize * cam.aspect;
+        var camHalfHeight = cam.orthographicSize;
+
+        // Calculate the threshold boundaries
+        float thresholdX = camHalfWidth * (1 - lockedOnCircleReactiveDistanceFromView);
+        float thresholdY = camHalfHeight * (1 - lockedOnCircleReactiveDistanceFromView);
+
+        // Calculate target position (where camera should be to keep circle centered)
+        Vector3 targetPosition = circleObject.position;
+        targetPosition.z = transform.position.z; // Preserve camera's Z position
+
+        // Calculate delta from current position
+        Vector3 delta = targetPosition - transform.position;
+
+        // Only move if outside the threshold zone
+        float absX = Mathf.Abs(delta.x);
+        float absY = Mathf.Abs(delta.y);
+
+        if (absX > thresholdX || absY > thresholdY)
+        {
+            // Calculate how much we're over the threshold
+            float overX = Mathf.Max(0, absX - thresholdX);
+            float overY = Mathf.Max(0, absY - thresholdY);
+
+            // Create movement vector that only corrects the excess
+            Vector3 moveVector = new Vector3(
+                overX * Mathf.Sign(delta.x),
+                overY * Mathf.Sign(delta.y),
+                0f
+            );
+
+            // Smooth interpolation using Lerp for consistent, frame-rate independent movement
+            Vector3 smoothMove = Vector3.Lerp(Vector3.zero, moveVector, followSmoothSpeed * Time.deltaTime);
+            transform.position += smoothMove;
+        }
     }
 
     /// <summary>
