@@ -14,10 +14,6 @@ public class LevelGenerator : MonoBehaviour, IDisposable
     private GameObject? starPrefab = null;
     [SerializeField]
     private Transform? starParent = null;
-    [SerializeField]
-    private Transform? circleObject = null;
-    [SerializeField]
-    private Transform? cameraObject = null;
 
     [Header("Line parameters"), SerializeField]
     private int resolution = 1000;
@@ -138,7 +134,7 @@ public class LevelGenerator : MonoBehaviour, IDisposable
 
     // #endif
 
-    public void ManuallyGenerateLevel(string function, IEnumerable<Vector2> starPositions, Vector2 circlePosition)
+    public void ManuallyGenerateLevel(string function, IEnumerable<Vector2> starPositions)
     {
         if (levelLine == null)
         {
@@ -200,19 +196,16 @@ public class LevelGenerator : MonoBehaviour, IDisposable
                 Instantiate(starPrefab, new Vector3(pos.x, pos.y, 0f), Quaternion.identity, starParent);
             }
         }
+    }
 
-        if (circleObject != null)
+    public void ClearLevel()
+    {
+        if (starParent != null)
         {
-            circleObject.position = new Vector3(circlePosition.x, circlePosition.y, circleObject.position.z);
-        }
-
-        if (cameraObject != null)
-        {
-            cameraObject.position = new Vector3(
-                circlePosition.x,
-                circlePosition.y - cameraObject.GetComponent<Camera>().orthographicSize * 0.75f,
-                cameraObject.position.z
-            );
+            foreach (Transform child in starParent)
+            {
+                Destroy(child.gameObject);
+            }
         }
     }
 

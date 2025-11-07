@@ -152,6 +152,28 @@ class CameraMovementController : MonoBehaviour
             return;
         }
 
+        // Проверяем, не взаимодействуем ли мы с UI
+        // Для мыши проверяем текущую позицию
+        if (Mouse.current != null && UnityEngine.EventSystems.EventSystem.current != null)
+        {
+            if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            {
+                return; // Курсор над UI элементом, игнорируем движение камеры
+            }
+        }
+
+        // Для тачскрина проверяем каждый активный тач
+        if (Touchscreen.current != null && UnityEngine.EventSystems.EventSystem.current != null)
+        {
+            for (int i = 0; i < Input.touchCount; i++)
+            {
+                if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject(Input.GetTouch(i).fingerId))
+                {
+                    return; // Тач над UI элементом, игнорируем движение камеры
+                }
+            }
+        }
+
         // Читаем текущее значение ввода движения (delta position в пикселях)
         moveInput = inputActions.Player.Move.ReadValue<Vector2>();
 

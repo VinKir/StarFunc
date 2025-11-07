@@ -118,6 +118,7 @@ public class FunctionGraphGenerator : MonoBehaviour, IDisposable
                     edgeCollider = GetComponent<EdgeCollider2D>();
                 }
                 edgeCollider.SetPoints(new List<Vector2>(collisionData));
+                edgeCollider.enabled = true;
 
                 onCollisionDataReady?.Invoke();
             }

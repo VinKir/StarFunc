@@ -107,7 +107,7 @@ public class FunctionParser
     public static string RawStringToInfix(string raw)
     {
         // Добавляем пробелы вокруг операторов, скобок и функций
-        string[] operators = { "+", "-", "*", "/", "^", "(", ")", "sin", "cos", "tan", "log", "exp" };
+        string[] operators = { "x", "+", "-", "*", "/", "^", "(", ")", "sin", "cos", "tan", "log", "exp" };
         foreach (string op in operators)
         {
             raw = raw.Replace(op, $" {op} ");
@@ -147,16 +147,38 @@ public class FunctionParser
 
         string[] tokens = infix.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
+        bool needToPutMultiplication = false;
+        bool firstOrOperator = true;
+
         foreach (string token in tokens)
         {
             // Если токен - число или переменная, добавляем в выход
             if (float.TryParse(token, out _) || IsVariable(token))
             {
+                if (needToPutMultiplication)
+                {
+                    while (operators.Count > 0 && precedence.ContainsKey(operators.Peek()) &&
+                       precedence[operators.Peek()] >= precedence["*"])
+                    {
+                        output.Add(operators.Pop());
+                    }
+                    operators.Push("*");
+                }
+
                 output.Add(token);
+
+                firstOrOperator = false;
+                needToPutMultiplication = true;
             }
             // Если токен - оператор
             else if (IsOperator(token))
             {
+                if (firstOrOperator && token == "-")
+                {
+                    // Обработка унарного минуса
+                    output.Add("0");
+                }
+
                 // Выталкиваем операторы с большим или равным приоритетом
                 while (operators.Count > 0 && precedence.ContainsKey(operators.Peek()) &&
                        precedence[operators.Peek()] >= precedence[token])
@@ -164,11 +186,27 @@ public class FunctionParser
                     output.Add(operators.Pop());
                 }
                 operators.Push(token);
+
+                firstOrOperator = true;
+                needToPutMultiplication = false;
             }
             // Если токен - открывающая скобка
             else if (token == "(")
             {
+                if (needToPutMultiplication)
+                {
+                    while (operators.Count > 0 && precedence.ContainsKey(operators.Peek()) &&
+                       precedence[operators.Peek()] >= precedence["*"])
+                    {
+                        output.Add(operators.Pop());
+                    }
+                    operators.Push("*");
+                }
+
                 operators.Push(token);
+
+                firstOrOperator = true;
+                needToPutMultiplication = false;
             }
             // Если токен - закрывающая скобка
             else if (token == ")")
@@ -179,6 +217,9 @@ public class FunctionParser
                     output.Add(operators.Pop());
                 }
                 operators.Pop(); // Удаляем открывающую скобку "("
+
+                firstOrOperator = false;
+                needToPutMultiplication = true;
             }
         }
 

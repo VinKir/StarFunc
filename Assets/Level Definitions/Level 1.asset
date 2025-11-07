@@ -12,9 +12,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: feed26fccde49e7b18cb35a4d8ab31ef, type: 3}
   m_Name: Level 1
   m_EditorClassIdentifier: Assembly-CSharp::LevelDefinition
-  levelFunction: sin(x)
+  levelFunction: -0.5(x+1) + 1
   circlePosition: {x: 0, y: 5}
   starPositions:
-  - {x: 0, y: 2}
-  - {x: -1.5, y: 0}
-  - {x: -3, y: 1}
+  - {x: 0, y: 1}
+  - {x: 4, y: -1}
+  - {x: 8, y: -3}
+  controlManager: 0
+  originalFunctionTemplate: '{0}(x+{1}) + {2}'
+  argumentSliderSettings:
+  - minValue: -1
+    maxValue: 1
+    initialValue: 0
+    color: {r: 0.99607843, g: 0.54901963, b: 0.15294118, a: 1}
+  - minValue: 0
+    maxValue: 2
+    initialValue: 0
+    color: {r: 0.85851026, g: 0.15294117, b: 0.99607843, a: 1}
+  - minValue: 0
+    maxValue: 2
+    initialValue: 2
+    color: {r: 0.15294117, g: 0.6280759, b: 0.99607843, a: 1}

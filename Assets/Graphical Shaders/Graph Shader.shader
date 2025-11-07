@@ -12,16 +12,18 @@ Shader "Custom/GraphShader"
     {
         Tags 
         { 
-            "RenderType"="Transparent" 
-            "Queue"="Transparent"
+            "RenderType"="Opaque" 
+            "Queue"="Geometry+500"
             "RenderPipeline" = "UniversalPipeline" 
         }
 
         Pass
         {
+            Name "GraphColorPass"
+            
             Blend SrcAlpha OneMinusSrcAlpha
             ZWrite Off
-            ZTest LEqual
+            ZTest Always
             Cull Back
 
             HLSLPROGRAM
