@@ -85,10 +85,10 @@ Shader "Custom/GridShader"
                 float axisMaskY = step(abs(coord.y), _AxisThickness);
                 float axisMask = max(axisMaskX, axisMaskY);
 
-                float3 color = lerp(_BackgroundColor.rgb, _LineColor.rgb, lineMask);
-                color = lerp(color, _LineColor.rgb, axisMask);
+                float4 color = lerp(_BackgroundColor, _LineColor, lineMask);
+                color = lerp(color, _LineColor, axisMask);
 
-                return float4(color, 1);
+                return color;
             }
             ENDCG
         }

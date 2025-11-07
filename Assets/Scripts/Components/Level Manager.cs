@@ -96,10 +96,9 @@ public class LevelManager : MonoBehaviour
             );
         }
 
-        if (graphGenerator != null)
+        if (controlManager == null && graphGenerator != null)
         {
             graphGenerator.FunctionExpression = "0";
-            graphGenerator.ComputeFunctionGraph(true);
         }
 
         controlManager?.Reset();

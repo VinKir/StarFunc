@@ -111,7 +111,7 @@ Material:
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
-    - _AxisThickness: 0.05
+    - _AxisThickness: 0.02
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
@@ -128,10 +128,10 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
-    - _LineThickness: 0.02
+    - _LineThickness: 0.005
     - _MajorInterval: 10
     - _MajorLineThickness: 0.04
-    - _MajorThickness: 0.04
+    - _MajorThickness: 0.01
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
@@ -148,11 +148,11 @@ Material:
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
-    - _BackgroundColor: {r: 0.52, g: 0.52, b: 0.52, a: 1}
+    - _BackgroundColor: {r: 0, g: 0, b: 0, a: 0}
     - _BaseColor: {r: 0.5211735, g: 0.5211735, b: 0.5211735, a: 1}
     - _Color: {r: 0.5211735, g: 0.5211735, b: 0.5211735, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _LineColor: {r: 1, g: 1, b: 1, a: 1}
+    - _LineColor: {r: 0.35502046, g: 0.35502046, b: 0.35502046, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
