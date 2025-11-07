@@ -20,7 +20,6 @@ public class LineRenderPass : ScriptableRenderPass
 
     public LineRenderPass()
     {
-        renderPassEvent = RenderPassEvent.AfterRenderingOpaques;
         passData = new PassData();
         materialPropertyBlock = new MaterialPropertyBlock();
     }
@@ -30,6 +29,40 @@ public class LineRenderPass : ScriptableRenderPass
         ComputeBuffer vertices,
         Matrix4x4 transform)
     {
+        // Set render pass event based on material's render queue
+        if (mat != null)
+        {
+            int queue = mat.renderQueue;
+
+            if (queue < 1000) // Before Background
+            {
+                renderPassEvent = RenderPassEvent.BeforeRenderingOpaques;
+            }
+            else if (queue <= 1500) // Background (1000)
+            {
+                renderPassEvent = RenderPassEvent.AfterRenderingOpaques;
+            }
+            else if (queue <= 2000) // Geometry (2000)
+            {
+                renderPassEvent = RenderPassEvent.AfterRenderingOpaques;
+            }
+            else if (queue <= 2450) // AlphaTest (2450)
+            {
+                renderPassEvent = RenderPassEvent.AfterRenderingOpaques;
+            }
+            else if (queue < 3000) // AlphaBlend (2500)
+            {
+                renderPassEvent = RenderPassEvent.AfterRenderingOpaques;
+            }
+            else if (queue <= 3500) // Transparent (3000)
+            {
+                renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
+            }
+            else // Overlay (4000+)
+            {
+                renderPassEvent = RenderPassEvent.AfterRenderingPostProcessing;
+            }
+        }
         // Validate buffers before setting up
         if (vertices == null || !vertices.IsValid())
         {
