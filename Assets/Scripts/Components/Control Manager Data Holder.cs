@@ -3,12 +3,11 @@
 using UnityEngine;
 
 [DisallowMultipleComponent, RequireComponent(typeof(LevelManager))]
-class ControlManagerDataHolder : MonoBehaviour
+public class ControlManagerDataHolder : MonoBehaviour
 {
     [Header("General references")]
     public FunctionGraphGenerator? graphGenerator = null;
     [Header("Argument Slider Control Manager")]
-    public GameObject? argumentSlider = null;
-    public float argumentMin = -10f;
-    public float argumentMax = 10f;
+    public GameObject? argumentSliderSectionPrefab = null;
+    public ArgumentSliderUIPanel? argumentSliderUIPanel = null;
 }

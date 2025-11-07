@@ -3,7 +3,7 @@
 using UnityEngine;
 
 [DisallowMultipleComponent, RequireComponent(typeof(LevelGenerator), typeof(ControlManagerDataHolder))]
-class LevelManager : MonoBehaviour
+public class LevelManager : MonoBehaviour
 {
     public enum ControlManagers
     {
@@ -135,7 +135,7 @@ class LevelManager : MonoBehaviour
 
         controlManager = levelToLoad.controlManager switch
         {
-            ControlManagers.ArgumentSlider => new ArgumentSlider(controlManagerDataHolder),
+            ControlManagers.ArgumentSlider => new ArgumentSliderControlManager(levelToLoad, controlManagerDataHolder),
             _ => null,
         };
 
