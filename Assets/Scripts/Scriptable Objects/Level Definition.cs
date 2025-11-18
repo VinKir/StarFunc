@@ -15,16 +15,26 @@ public class LevelDefinition : ScriptableObject
         public Color color;
     }
 
+    [Serializable]
+    public struct FunctionSelectorSectionSettings
+    {
+        public string function;
+        public Color color;
+    }
+
     public string levelFunction = "sin(x)";
+    public float maxRunningSeconds = 60f;
     public Vector2 circlePosition = new(0f, 0f);
+    public Vector2 cameraOffset = new(0f, 0f);
     public Vector2[] starPositions = Array.Empty<Vector2>();
     public LevelManager.ControlManagers controlManager = LevelManager.ControlManagers.ArgumentSlider;
-    public string originalFunctionTemplate = "sin({0}*x)";
-
-    // Argument Slider specific
 
     [Header("Argument Slider Control Manager Settings")]
+    public string originalFunctionTemplate = "sin({0}*x)";
     public ArgumentSliderSectionSettings[] argumentSliderSettings = Array.Empty<ArgumentSliderSectionSettings>();
+
+    [Header("Function Selector Control Manager Settings")]
+    public FunctionSelectorSectionSettings[] functionSelectorSettings = Array.Empty<FunctionSelectorSectionSettings>();
 
     private void OnValidate()
     {

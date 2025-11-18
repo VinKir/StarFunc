@@ -1,5 +1,6 @@
 #nullable enable
 
+using System.Collections;
 using UnityEngine;
 
 [DisallowMultipleComponent, RequireComponent(typeof(LevelGenerator), typeof(ControlManagerDataHolder))]
@@ -7,7 +8,8 @@ public class LevelManager : MonoBehaviour
 {
     public enum ControlManagers
     {
-        ArgumentSlider
+        ArgumentSlider,
+        FunctionSelector,
     }
 
     // Пока что поддерживаем только заранее установленные уровни
@@ -20,22 +22,35 @@ public class LevelManager : MonoBehaviour
     private Transform? cameraObject = null;
     [SerializeField]
     private FunctionGraphGenerator? graphGenerator = null;
+    [SerializeField]
+    private GameUIManager? gameUIManager = null;
 
     private LevelGenerator? levelGenerator = null;
     private int starsCollected = 0;
     private int totalStars = 0;
     private IControlManager? controlManager = null;
     private ControlManagerDataHolder? controlManagerDataHolder = null;
+    private Coroutine? levelTimerCoroutine = null;
 
     public void CollectStar()
     {
         // Ограничиваем количество собранных звёзд числом всего количества звёзд на уровне
         starsCollected = starsCollected < totalStars ? starsCollected + 1 : totalStars;
+        if (starsCollected == totalStars)
+        {
+            FinishLevel();
+        }
     }
 
     public void Reset()
     {
         starsCollected = 0;
+
+        if (levelTimerCoroutine != null)
+        {
+            StopCoroutine(levelTimerCoroutine);
+            levelTimerCoroutine = null;
+        }
 
         if (levelGenerator == null)
         {
@@ -90,8 +105,8 @@ public class LevelManager : MonoBehaviour
         if (cameraObject != null)
         {
             cameraObject.position = new Vector3(
-                levelToLoad.circlePosition.x,
-                levelToLoad.circlePosition.y - cameraObject.GetComponent<Camera>().orthographicSize * 0.75f,
+                levelToLoad.circlePosition.x + levelToLoad.cameraOffset.x,
+                levelToLoad.circlePosition.y + levelToLoad.cameraOffset.y - cameraObject.GetComponent<Camera>().orthographicSize * 0.75f,
                 cameraObject.position.z
             );
         }
@@ -102,6 +117,11 @@ public class LevelManager : MonoBehaviour
         }
 
         controlManager?.Reset();
+
+        if (gameUIManager != null)
+        {
+            gameUIManager.PlaySprite();
+        }
     }
 
     public void Play()
@@ -113,6 +133,27 @@ public class LevelManager : MonoBehaviour
             rb.simulated = true;
             trail.enabled = true;
         }
+
+        if (levelToLoad != null && levelToLoad.maxRunningSeconds > 0f)
+        {
+            if (levelTimerCoroutine != null)
+            {
+                StopCoroutine(levelTimerCoroutine);
+            }
+
+            levelTimerCoroutine = StartCoroutine(LevelTimer(levelToLoad.maxRunningSeconds));
+        }
+
+        if (gameUIManager != null)
+        {
+            gameUIManager.StopSprite();
+        }
+    }
+
+    public void FinishLevel()
+    {
+        Debug.Log($"Collected {starsCollected} out of {totalStars} stars.");
+        Reset();
     }
 
     private void Awake()
@@ -135,9 +176,16 @@ public class LevelManager : MonoBehaviour
         controlManager = levelToLoad.controlManager switch
         {
             ControlManagers.ArgumentSlider => new ArgumentSliderControlManager(levelToLoad, controlManagerDataHolder),
+            ControlManagers.FunctionSelector => new FunctionSelectorControlManager(levelToLoad, controlManagerDataHolder),
             _ => null,
         };
 
         Reset();
+    }
+
+    private IEnumerator LevelTimer(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        FinishLevel();
     }
 }

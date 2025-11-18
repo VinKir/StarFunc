@@ -11,20 +11,38 @@ public class GameUIManager : MonoBehaviour
     private Sprite? playSprite = null;
     [SerializeField]
     private Sprite? stopSprite = null;
+    [SerializeField]
+    private CameraMovementController? cameraMovementController = null;
+    [SerializeField]
+    private Image? lockUnlockButtonImage = null;
+    [SerializeField]
+    private Sprite? lockSprite = null;
+    [SerializeField]
+    private Sprite? unlockSprite = null;
 
     private bool isPlaying = false;
     private LevelManager? levelManager = null;
 
-    public void TogglePlayStopButton()
+    public void ToggleLockButton()
     {
-        if (playStopButtonImage == null || playSprite == null || stopSprite == null)
+        if (cameraMovementController == null)
         {
-            Debug.LogWarning("GameUIManager: Play/Stop button or sprites are not assigned.");
             return;
         }
 
-        playStopButtonImage.sprite = isPlaying ? playSprite : stopSprite;
+        var locked = cameraMovementController.lockOnCircle;
+        cameraMovementController.lockOnCircle = !locked;
 
+        if (lockUnlockButtonImage == null || lockSprite == null || unlockSprite == null)
+        {
+            return;
+        }
+
+        lockUnlockButtonImage.sprite = locked ? lockSprite : unlockSprite;
+    }
+
+    public void TogglePlayStopButton()
+    {
         if (isPlaying && levelManager != null)
         {
             levelManager.Reset();
@@ -33,8 +51,32 @@ public class GameUIManager : MonoBehaviour
         {
             levelManager.Play();
         }
+    }
 
-        isPlaying = !isPlaying;
+    public void PlaySprite()
+    {
+        if (playStopButtonImage == null || playSprite == null)
+        {
+            Debug.LogWarning("GameUIManager: Play/Stop button or sprites are not assigned.");
+            return;
+        }
+
+        playStopButtonImage.sprite = playSprite;
+
+        isPlaying = false;
+    }
+
+    public void StopSprite()
+    {
+        if (playStopButtonImage == null || stopSprite == null)
+        {
+            Debug.LogWarning("GameUIManager: Play/Stop button or sprites are not assigned.");
+            return;
+        }
+
+        playStopButtonImage.sprite = stopSprite;
+
+        isPlaying = true;
     }
 
     private void Awake()
