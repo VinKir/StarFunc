@@ -3,4 +3,5 @@
 interface IControlManager
 {
     void Reset();
+    void UpdateFormula();
 }

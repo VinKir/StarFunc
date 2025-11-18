@@ -23,8 +23,14 @@ public class ArgumentSliderControlManager : IControlManager
         }
 
         dataHolder.argumentSliderUIPanel.Show();
+        if (dataHolder.functionSelectorUIPanel != null)
+        {
+            dataHolder.functionSelectorUIPanel.Hide();
+        }
 
-        if (dataHolder.argumentSliderSectionPrefab == null)
+        var sliderPrefab = dataHolder.argumentSliderUIPanel.ArgumentSliderPrefab;
+
+        if (sliderPrefab == null)
         {
             Debug.LogError("Argument Slider Section Prefab is not assigned in Control Manager Data Holder.");
             return;
@@ -35,7 +41,7 @@ public class ArgumentSliderControlManager : IControlManager
         foreach (var sliderSectionSettings in levelDefinition.argumentSliderSettings)
         {
             var sliderSection = UnityEngine.Object.Instantiate(
-                dataHolder.argumentSliderSectionPrefab,
+                sliderPrefab,
                 slidersContainer
             ).GetComponent<ArgumentSliderSection>();
 
@@ -65,7 +71,7 @@ public class ArgumentSliderControlManager : IControlManager
         UpdateFormula();
     }
 
-    private void UpdateFormula()
+    public void UpdateFormula()
     {
         if (dataHolder.argumentSliderUIPanel == null ||
             dataHolder.argumentSliderUIPanel.FunctionLabel == null ||

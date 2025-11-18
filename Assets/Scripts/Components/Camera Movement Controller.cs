@@ -21,6 +21,7 @@ class CameraMovementController : MonoBehaviour
     [Header("Movement Settings")]
     public bool lockOnCircle = false;
     public float lockedOnCircleReactiveDistanceFromView = 0.1f;
+    public float lockedOnCircleReactioveVerticalScale = 2f;
     [Tooltip("Скорость следования камеры за объектом (выше = быстрее)")]
     public float followSmoothSpeed = 5f;
 
@@ -108,7 +109,7 @@ class CameraMovementController : MonoBehaviour
 
         // Calculate the threshold boundaries
         float thresholdX = camHalfWidth * (1 - lockedOnCircleReactiveDistanceFromView);
-        float thresholdY = camHalfHeight * (1 - lockedOnCircleReactiveDistanceFromView);
+        float thresholdY = camHalfHeight * (1 - lockedOnCircleReactiveDistanceFromView * lockedOnCircleReactioveVerticalScale);
 
         // Calculate target position (where camera should be to keep circle centered)
         Vector3 targetPosition = circleObject.position;

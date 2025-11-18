@@ -10,23 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: feed26fccde49e7b18cb35a4d8ab31ef, type: 3}
-  m_Name: Level 1
+  m_Name: Level 2
   m_EditorClassIdentifier: Assembly-CSharp::LevelDefinition
-  levelFunction: x
+  levelFunction: x - 0.5
   maxRunningSeconds: 5
   circlePosition: {x: 0, y: 5}
-  cameraOffset: {x: -1, y: 0}
+  cameraOffset: {x: -1.5, y: 0}
   starPositions:
-  - {x: 0, y: 0.5}
-  - {x: -2, y: -1.5}
+  - {x: 0, y: 0}
+  - {x: -1, y: -0.5}
   - {x: -3, y: -2.5}
   controlManager: 1
   originalFunctionTemplate: 
   argumentSliderSettings: []
   functionSelectorSettings:
-  - function: x + 2
-    color: {r: 0.12958844, g: 0.31767017, b: 0.11628271, a: 1}
-  - function: x - 2
-    color: {r: 0.11764705, g: 0.26688135, b: 0.31764707, a: 1}
-  - function: x
-    color: {r: 0.38349855, g: 0.3851952, b: 0.13391063, a: 1}
+  - function: x + 1
+    color: {r: 0.525, g: 0.143325, b: 0.143325, a: 1}
+  - function: x - 0.5
+    color: {r: 0.21176472, g: 0.4745098, b: 0.3290954, a: 1}
+  - function: -2
+    color: {r: 0.21039201, g: 0.21039201, b: 0.47599998, a: 1}

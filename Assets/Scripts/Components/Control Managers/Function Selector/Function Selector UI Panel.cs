@@ -1,15 +1,14 @@
 #nullable enable
 
 using UnityEngine;
-using TMPro;
 
-public class ArgumentSliderUIPanel : MonoBehaviour
+public class FunctionSelectorUIPanel : MonoBehaviour
 {
     [field: SerializeField]
-    public Transform? SlidersContainer { get; private set; }
+    public Transform? ButtonsContainer { get; private set; }
 
     [field: SerializeField]
-    public TextMeshProUGUI? FunctionLabel { get; private set; }
+    public GameObject? FunctionButtonPrefab { get; private set; }
 
     public void Show()
     {
