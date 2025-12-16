@@ -20,6 +20,8 @@ public enum AnimationType
     LinearFunction1,
     LinearFunction2,
     LinearFunction3,
+    LinearFunction4,
+    LinearFunction5,
     TrigSin,
     TrigCos,
     Custom

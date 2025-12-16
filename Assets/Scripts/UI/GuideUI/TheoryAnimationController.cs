@@ -7,6 +7,7 @@ public class TheoryAnimationController : MonoBehaviour
     [Header("References")]
     public LineRenderer lineRenderer;
     public TextMeshProUGUI functionText;
+    public FunctionGraphGenerator graphGenerator;
 
     private float k, b;
     private Tween currentTween;
@@ -21,8 +22,7 @@ public class TheoryAnimationController : MonoBehaviour
 
     public void PlayAnimation(AnimationType type)
     {
-        currentTween?.Kill();
-        Clear();
+        StopAnimation();
 
         switch (type)
         {
@@ -34,6 +34,12 @@ public class TheoryAnimationController : MonoBehaviour
                 break;
             case AnimationType.LinearFunction3:
                 AnimateLinearFunction3();
+                break;
+            case AnimationType.LinearFunction4:
+                AnimateLinearFunction4();
+                break;
+            case AnimationType.LinearFunction5:
+                AnimateLinearFunction5();
                 break;
             case AnimationType.TrigSin:
                 AnimateSin();
@@ -49,47 +55,127 @@ public class TheoryAnimationController : MonoBehaviour
 
     void AnimateLinearFunction1()
     {
-        // y = kx + 0, k changes 0 → 1 → 0
+        Clear();
+
         k = 0;
         b = 0;
         AnimateLine();
-        currentTween = DOTween.To(() => k, value =>
-        {
-            k = value;
-            AnimateLine();
-        }, 1f, 4f)
-        .SetLoops(-1, LoopType.Yoyo)
-        .SetEase(Ease.InOutSine);
+
+        Sequence seq = DOTween.Sequence();
+
+        seq.Append(
+            DOTween.To(() => k, v => { k = v; AnimateLine(); }, 1f, 2f)
+            .SetEase(Ease.InOutSine)
+        );
+        seq.Append(
+            DOTween.To(() => k, v => { k = v; AnimateLine(); }, 0f, 2f)
+            .SetEase(Ease.InOutSine)
+        );
+
+        seq.Append(
+            DOTween.To(() => b, v => { b = v; AnimateLine(); }, 1f, 1.5f)
+            .SetEase(Ease.InOutSine)
+        );
+        seq.Append(
+            DOTween.To(() => b, v => { b = v; AnimateLine(); }, 0f, 1.5f)
+            .SetEase(Ease.InOutSine)
+        );
+
+        seq.Append(
+            DOTween.To(() => k, v => { k = v; AnimateLine(); }, -1f, 2f)
+        );
+        seq.Join(
+            DOTween.To(() => b, v => { b = v; AnimateLine(); }, 2f, 2f)
+        );
+
+        seq.Append(
+            DOTween.To(() => k, v => { k = v; AnimateLine(); }, 0f, 1.5f)
+        );
+        seq.Join(
+            DOTween.To(() => b, v => { b = v; AnimateLine(); }, 0f, 1.5f)
+        );
+
+        seq.SetLoops(-1, LoopType.Restart);
+
+        currentTween = seq;
     }
 
     void AnimateLinearFunction2()
     {
-        // y = kx + 0, k changes 1 → -1 → 1
-        k = 1;
+        Clear();
+
+        k = 0;
         b = 0;
         AnimateLine();
-        currentTween = DOTween.To(() => k, value =>
-        {
-            k = value;
-            AnimateLine();
-        }, -1f, 6f)
-        .SetLoops(-1, LoopType.Yoyo)
-        .SetEase(Ease.InOutSine);
+
+        currentTween = DOTween.Sequence()
+            .Append(DOTween.To(() => k, v => { k = v; AnimateLine(); }, 5f, 3f)
+                .SetEase(Ease.OutSine))
+            .AppendInterval(0.5f)
+            .Append(DOTween.To(() => k, v => { k = v; AnimateLine(); }, 1f, 3f)
+                .SetEase(Ease.InOutSine))
+            .AppendInterval(0.3f)
+            .Append(DOTween.To(() => k, v => { k = v; AnimateLine(); }, 0f, 2f)
+                .SetEase(Ease.InOutSine))
+            .SetLoops(-1, LoopType.Restart);
     }
 
     void AnimateLinearFunction3()
     {
-        // y = x + b, b changes 0 → 3 → -3
-        k = 1;
-        b = -3;
+        Clear();
+
+        k = 0;
+        b = 0;
         AnimateLine();
-        currentTween = DOTween.To(() => b, value =>
-        {
-            b = value;
-            AnimateLine();
-        }, 3f, 4f)
-        .SetLoops(-1, LoopType.Yoyo)
-        .SetEase(Ease.InOutSine);
+
+        currentTween = DOTween.Sequence()
+            .Append(DOTween.To(() => k, v => { k = v; AnimateLine(); }, -5f, 3f)
+                .SetEase(Ease.OutSine))
+            .AppendInterval(0.5f)
+            .Append(DOTween.To(() => k, v => { k = v; AnimateLine(); }, -1f, 3f)
+                .SetEase(Ease.InOutSine))
+            .AppendInterval(0.3f)
+            .Append(DOTween.To(() => k, v => { k = v; AnimateLine(); }, 0f, 2f)
+                .SetEase(Ease.InOutSine))
+            .SetLoops(-1, LoopType.Restart);
+    }
+
+    void AnimateLinearFunction4()
+    {
+        Clear();
+
+        k = 0;
+        b = 0;
+        AnimateLine();
+
+        currentTween = DOTween.Sequence()
+            .Append(DOTween.To(() => b, v => { b = v; AnimateLine(); }, 2f, 2.5f)
+                .SetEase(Ease.InOutSine))
+            .Append(DOTween.To(() => b, v => { b = v; AnimateLine(); }, -2f, 2.5f)
+                .SetEase(Ease.InOutSine))
+            .Append(DOTween.To(() => b, v => { b = v; AnimateLine(); }, 0f, 2f)
+                .SetEase(Ease.InOutSine))
+            .SetLoops(-1, LoopType.Restart);
+    }
+
+    void AnimateLinearFunction5()
+    {
+        Clear();
+
+        k = 1f;
+        b = 0;
+        AnimateLine();
+
+        currentTween = DOTween.Sequence()
+            .Append(DOTween.To(() => b, v => { b = v; AnimateLine(); }, 2f, 2.5f)
+                .SetEase(Ease.OutQuad))
+            .AppendInterval(0.3f)
+            .Append(DOTween.To(() => b, v => { b = v; AnimateLine(); }, -1f, 2f)
+                .SetEase(Ease.OutQuad))
+            .AppendInterval(0.3f)
+            .Append(DOTween.To(() => b, v => { b = v; AnimateLine(); }, 0f, 2f)
+                .SetEase(Ease.InOutSine))
+            .SetLoops(-1, LoopType.Restart);
     }
 
     void AnimateLine()
@@ -118,6 +204,8 @@ public class TheoryAnimationController : MonoBehaviour
 
         if (functionText)
             functionText.text = $"y = {k:F2}x + {b:F2}";
+
+        graphGenerator.FunctionExpression = $"{k:F2}x + {b:F2}";
     }
 
     void AnimateSin()
@@ -158,6 +246,13 @@ public class TheoryAnimationController : MonoBehaviour
     {
         lineRenderer.positionCount = 0;
         functionText.text = "";
+    }
+
+
+    public void StopAnimation()
+    {
+        currentTween?.Kill();
+        Clear();
     }
 }
 

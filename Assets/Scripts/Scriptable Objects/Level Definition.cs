@@ -36,6 +36,9 @@ public class LevelDefinition : ScriptableObject
     [Header("Function Selector Control Manager Settings")]
     public FunctionSelectorSectionSettings[] functionSelectorSettings = Array.Empty<FunctionSelectorSectionSettings>();
 
+    [Header("Background (Sprite PNG)")]
+    public Sprite backgroundSprite;
+
     private void OnValidate()
     {
         int arguments = originalFunctionTemplate.Split(new char[] { '{' }).Length - 1;

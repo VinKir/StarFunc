@@ -30,3 +30,4 @@ MonoBehaviour:
     color: {r: 0.11764705, g: 0.26688135, b: 0.31764707, a: 1}
   - function: x
     color: {r: 0.38349855, g: 0.3851952, b: 0.13391063, a: 1}
+  backgroundSprite: {fileID: -949200747, guid: 18312d23e527f52438ca29167b519ade, type: 3}

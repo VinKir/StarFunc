@@ -32,6 +32,9 @@ public class LevelManager : MonoBehaviour
     private ControlManagerDataHolder? controlManagerDataHolder = null;
     private Coroutine? levelTimerCoroutine = null;
 
+    [Header("Background"), SerializeField]
+    private SpriteRenderer? backgroundImage = null;
+
     public void CollectStar()
     {
         // Ограничиваем количество собранных звёзд числом всего количества звёзд на уровне
@@ -68,6 +71,19 @@ public class LevelManager : MonoBehaviour
             levelToLoad.levelFunction,
             levelToLoad.starPositions
         );
+
+        if (backgroundImage != null)
+        {
+            if (levelToLoad.backgroundSprite != null)
+            {
+                backgroundImage.sprite = levelToLoad.backgroundSprite;
+                backgroundImage.enabled = true;
+            }
+            else
+            {
+                backgroundImage.enabled = false;
+            }
+        }
 
         totalStars = levelToLoad.starPositions.Length;
 
