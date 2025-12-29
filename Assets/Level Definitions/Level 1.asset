@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: feed26fccde49e7b18cb35a4d8ab31ef, type: 3}
   m_Name: Level 1
   m_EditorClassIdentifier: Assembly-CSharp::LevelDefinition
+  levelIndex: 0
   levelFunction: x
   maxRunningSeconds: 5
   circlePosition: {x: 0, y: 5}

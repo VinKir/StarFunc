@@ -22,6 +22,8 @@ public class LevelDefinition : ScriptableObject
         public Color color;
     }
 
+    public int levelIndex = 0; // start index - 0
+
     public string levelFunction = "sin(x)";
     public float maxRunningSeconds = 60f;
     public Vector2 circlePosition = new(0f, 0f);
