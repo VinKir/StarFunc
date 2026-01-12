@@ -56,16 +56,14 @@ public class LevelManager : MonoBehaviour
         }
 
         if (levelGenerator == null)
-        {
             return;
-        }
 
         levelGenerator.ClearLevel();
 
+        levelToLoad = LevelProgressManager.Instance.SelectedLevel;
+
         if (levelToLoad == null)
-        {
             return;
-        }
 
         levelGenerator.ManuallyGenerateLevel(
             levelToLoad.levelFunction,
@@ -113,9 +111,7 @@ public class LevelManager : MonoBehaviour
 
             // Clear trail again after moving to ensure no lingering positions
             if (trail != null)
-            {
                 trail.Clear();
-            }
         }
 
         if (cameraObject != null)
@@ -169,6 +165,11 @@ public class LevelManager : MonoBehaviour
     public void FinishLevel()
     {
         Debug.Log($"Collected {starsCollected} out of {totalStars} stars.");
+
+        var levelId = levelToLoad != null ? levelToLoad.levelIndex : 1;
+        if (starsCollected > LevelProgressManager.Instance.GetStars(levelId))
+            LevelProgressManager.Instance.SetStars(levelId, starsCollected);
+
         Reset();
     }
 

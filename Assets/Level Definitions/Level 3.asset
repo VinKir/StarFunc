@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: feed26fccde49e7b18cb35a4d8ab31ef, type: 3}
   m_Name: Level 3
   m_EditorClassIdentifier: Assembly-CSharp::LevelDefinition
+  levelIndex: 2
   levelFunction: 0.5x
   maxRunningSeconds: 5
   circlePosition: {x: 2, y: 3}
@@ -30,3 +31,4 @@ MonoBehaviour:
     color: {r: 0.21772312, g: 0.45882353, b: 0.12941179, a: 1}
   - function: 0.5x
     color: {r: 0.12941179, g: 0.32349482, b: 0.45882353, a: 1}
+  backgroundSprite: {fileID: 0}

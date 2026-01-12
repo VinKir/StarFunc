@@ -24,6 +24,37 @@ public class LevelProgressManager : MonoBehaviour
 
     public LevelProgressData Data { get; private set; } = new(LEVEL_COUNT);
 
+
+    public LevelDefinition SelectedLevel;
+
+
+    #region  DEBUG
+    [Header("DEBUG / TEST SAVE")]
+    [SerializeField, Min(0)]
+    private int testLevelIndex = 0;
+
+    [SerializeField, Range(0, 3)]
+    private int testStars = 3;
+
+
+    [ContextMenu("Save Test Progress")]
+    private void SaveTestProgress()
+    {
+        if (testLevelIndex < 0 || testLevelIndex >= LEVEL_COUNT)
+        {
+            Debug.LogError($"Invalid level index: {testLevelIndex}");
+            return;
+        }
+
+        SetStars(testLevelIndex, testStars);
+
+        Debug.Log(
+            $"[LevelProgressManager] Saved TEST progress: " +
+            $"Level {testLevelIndex + 1}, Stars {testStars}"
+        );
+    }
+    #endregion
+
     private void Awake()
     {
         if (_instance != null && _instance != this)
